@@ -1,16 +1,23 @@
 // middleware/upload.middleware.js
+const fs = require('fs');
 const multer = require('multer');
 const path = require('path');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const cloudinary = require('../config/cloudinary');
 
-// Configure storage engine
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/'); // Ensure this folder exists or create it
-  },
-  filename: function (req, file, cb) {
-    const ext = path.extname(file.originalname);
-    const uniqueName = `img_${Date.now()}${ext}`;
-    cb(null, uniqueName);
+// Ensure 'uploads' directory exists
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir);
+}
+
+// Configure storage
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: 'subscribers',        // Folder name in Cloudinary
+    allowed_formats: ['jpg', 'jpeg', 'png'],
+    transformation: [{ width: 300, height: 300, crop: 'limit' }]
   }
 });
 
