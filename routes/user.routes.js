@@ -86,24 +86,56 @@ module.exports = router;
  *           schema:
  *             type: object
  *             required:
- *               - name
- *               - status
- *               - expiresOn
+ *               - fullName
+ *               - phoneNumber
+ *               - subscriptionType
+ *               - subscriberType
+ *               - dateOfSubscription
  *             properties:
- *               name:
+ *               fullName:
  *                 type: string
- *               status:
+ *                 example: "John Doe"
+ *               phoneNumber:
  *                 type: string
- *                 enum: [active, expiring, expired]
- *               expiresOn:
+ *                 example: "+1234567890"
+ *               referral:
+ *                 type: string
+ *                 example: "REF123"
+ *               subscriptionType:
+ *                 type: string
+ *                 enum: [
+ *                   'Half-day (morning)',
+ *                   'Half-day (night)',
+ *                   'Full day',
+ *                   'Weekly (day-only)',
+ *                   'Weekly (full-access)',
+ *                   'Bi-weekly (day-only)',
+ *                   'Bi-weekly (full-access)',
+ *                   'Monthly (day-only)',
+ *                   'Monthly (full-access)'
+ *                 ]
+ *               subscriberType:
+ *                 type: string
+ *                 enum: ['Regular Subscriber', 'SRS Worker']
+ *               dateOfSubscription:
  *                 type: string
  *                 format: date
+ *                 example: "2024-03-20"
  *               image:
  *                 type: string
  *                 format: binary
  *     responses:
  *       201:
  *         description: Subscriber created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   $ref: '#/components/schemas/Subscriber'
  *       401:
  *         description: Unauthorized
  */
@@ -145,13 +177,99 @@ module.exports = router;
  *           schema:
  *             type: object
  *             properties:
- *               name:
+ *               fullName:
  *                 type: string
- *               status:
+ *               phoneNumber:
  *                 type: string
- *               expiresOn:
+ *               referral:
+ *                 type: string
+ *               subscriptionType:
+ *                 type: string
+ *                 enum: [
+ *                   'Half-day (morning)',
+ *                   'Half-day (night)',
+ *                   'Full day',
+ *                   'Weekly (day-only)',
+ *                   'Weekly (full-access)',
+ *                   'Bi-weekly (day-only)',
+ *                   'Bi-weekly (full-access)',
+ *                   'Monthly (day-only)',
+ *                   'Monthly (full-access)'
+ *                 ]
+ *               subscriberType:
+ *                 type: string
+ *                 enum: ['Regular Subscriber', 'SRS Worker']
+ *               dateOfSubscription:
  *                 type: string
  *                 format: date
+ *     responses:
+ *       200:
+ *         description: Subscriber updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   $ref: '#/components/schemas/Subscriber'
+ */
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Subscriber:
+ *       type: object
+ *       properties:
+ *         _id:
+ *           type: string
+ *         username:
+ *           type: string
+ *         role:
+ *           type: string
+ *           enum: ['subscriber']
+ *         subscriberDetails:
+ *           type: object
+ *           properties:
+ *             fullName:
+ *               type: string
+ *             phoneNumber:
+ *               type: string
+ *             referral:
+ *               type: string
+ *             subscriptionType:
+ *               type: string
+ *               enum: [
+ *                 'Half-day (morning)',
+ *                 'Half-day (night)',
+ *                 'Full day',
+ *                 'Weekly (day-only)',
+ *                 'Weekly (full-access)',
+ *                 'Bi-weekly (day-only)',
+ *                 'Bi-weekly (full-access)',
+ *                 'Monthly (day-only)',
+ *                 'Monthly (full-access)'
+ *               ]
+ *             subscriberType:
+ *               type: string
+ *               enum: ['Regular Subscriber', 'SRS Worker']
+ *             dateOfSubscription:
+ *               type: string
+ *               format: date
+ *             image:
+ *               type: string
+ *             status:
+ *               type: string
+ *               enum: ['active', 'expiring', 'expired']
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
+ *
  *     responses:
  *       200:
  *         description: Subscriber updated

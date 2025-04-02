@@ -1,21 +1,43 @@
 const User = require('../models/user.model');
 
 exports.createSubscriber = async (req, res) => {
-  const { name, status, expiresOn } = req.body;
-  const imagePath = req.file ? req.file.path : null;
+  try {
+    const {
+      fullName,
+      phoneNumber,
+      referral,
+      subscriptionType,
+      dateOfSubscription,
+      subscriberType
+    } = req.body;
 
-  const subscriber = await User.create({
-    username: `sub_${Date.now()}`,
-    role: 'subscriber',
-    subscriberDetails: {
-      name,
-      status,
-      expiresOn,
-      image: imagePath
-    }
-  });
+    const imagePath = req.file ? req.file.path : null;
 
-  res.status(201).json(subscriber);
+    const subscriber = await User.create({
+      username: `sub_${Date.now()}`,
+      role: 'subscriber',
+      subscriberDetails: {
+        fullName,
+        phoneNumber,
+        referral,
+        subscriptionType,
+        dateOfSubscription,
+        subscriberType,
+        image: imagePath,
+        status: 'active'
+      }
+    });
+
+    res.status(201).json({
+      success: true,
+      data: subscriber
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message
+    });
+  }
 };
 
 exports.getSubscribers = async (req, res) => {

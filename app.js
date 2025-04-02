@@ -6,12 +6,11 @@ const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const connectDB = require('./config/db');
 const swaggerUi = require('swagger-ui-express');
-const swaggerSpec = require('./config/swagger'); // ✅ Correct path
+const swaggerSpec = require('./config/swagger'); 
 
 
-const authRoutes = require('./routes/auth.routes');        // ✅ correct file
-const userRoutes = require('./routes/user.routes');        // ✅ clean, not reused
-
+const authRoutes = require('./routes/auth.routes');
+const userRoutes = require('./routes/user.routes');
 const app = express();
 
 // Security middleware
