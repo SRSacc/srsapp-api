@@ -131,3 +131,15 @@ exports.changePassword = async (req, res) => {
 
   res.json({ message: 'Password changed successfully' });
 };
+
+const getUserDetails = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user.id).select('-password');
+  
+  res.status(200).json({
+    success: true,
+    data: user
+  });
+});
+module.exports = {
+  getUserDetails
+};

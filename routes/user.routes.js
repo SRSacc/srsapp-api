@@ -9,7 +9,8 @@ const {
   updateSubscriberImage,
   createReceptionist,
   getReceptionists,
-  changePassword
+  changePassword,
+  getUserDetails
 } = require('../controllers/user.controller');
 
 const { protect } = require('../middleware/auth.middleware');
@@ -29,6 +30,9 @@ router.get('/receptionists', protect, authorizeRoles('manager'), getReceptionist
 
 // Password Change
 router.post('/change-password', protect, changePassword);
+
+// User Details
+router.get('/me', protect, getUserDetails);
 
 module.exports = router;
 /**
@@ -415,3 +419,35 @@ module.exports = router;
  *       401:
  *         description: Unauthorized
  */
+
+/**
+ * @swagger
+ * /users/me:
+ *   get:
+ *     summary: Get authenticated user details
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User details retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     _id:
+ *                       type: string
+ *                     username:
+ *                       type: string
+ *                     role:
+ *                       type: string
+ *                       enum: ['manager', 'receptionist', 'subscriber']
+ *       401:
+ *         description: Not authorized
+*/
