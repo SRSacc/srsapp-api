@@ -7,8 +7,7 @@ const rateLimit = require('express-rate-limit');
 const connectDB = require('./config/db');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./config/swagger'); 
-
-
+const errorHandler = require('./middleware/error.middleware');
 const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
 const app = express();
@@ -28,13 +27,13 @@ app.use('/api', limiter);
 connectDB();
 
 app.use('/uploads', express.static('uploads'));
+// Move error handler before the server starts listening
 app.use('/api/auth', authRoutes);      
 app.use('/api/users', userRoutes);
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
+// Global error handler - should be after routes
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
-
-// Global error handler - add this at the end
-app.use(errorHandler);

@@ -1,4 +1,5 @@
 const User = require('../models/user.model');
+const asyncHandler = require('../middleware/async.middleware');
 
 exports.createSubscriber = async (req, res) => {
   try {
@@ -132,7 +133,7 @@ exports.changePassword = async (req, res) => {
   res.json({ message: 'Password changed successfully' });
 };
 
-const getUserDetails = asyncHandler(async (req, res) => {
+exports.getUserDetails = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user.id).select('-password');
   
   res.status(200).json({
@@ -140,6 +141,3 @@ const getUserDetails = asyncHandler(async (req, res) => {
     data: user
   });
 });
-module.exports = {
-  getUserDetails
-};
