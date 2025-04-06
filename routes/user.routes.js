@@ -448,6 +448,8 @@ module.exports = router;
  *                     role:
  *                       type: string
  *                       enum: ['manager', 'receptionist', 'subscriber']
+ *                     subscriberDetails:
+ *                       $ref: '#/components/schemas/Subscriber'
  *       401:
  *         description: Not authorized
-*/
+ */
