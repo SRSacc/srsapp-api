@@ -1,4 +1,5 @@
 # srsapp-api
 
 ## DOCS
-https://srsapp-api.onrender.com/api/docs
+
+[API Documentation](https://srsapp-api.onrender.com/api/docs)
