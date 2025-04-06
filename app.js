@@ -8,9 +8,13 @@ const connectDB = require('./config/db');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./config/swagger'); 
 const errorHandler = require('./middleware/error.middleware');
+
 const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
 const app = express();
+
+// Trust proxy - add this line to fix the X-Forwarded-For issue
+app.set('trust proxy', 1);
 
 // Security middleware
 app.use(helmet());
