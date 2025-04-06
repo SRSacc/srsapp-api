@@ -4,37 +4,39 @@ const bcrypt = require('bcryptjs');
 
 /**
  * User Schema
- * @typedef {Object} UserSchema
- * @property {string} username - Unique identifier for the user
- * @property {string} [password] - Required for all roles except subscriber
- * @property {('manager'|'receptionist'|'subscriber')} role - User role in the system
- * @property {Object} subscriberDetails - Details specific to subscriber role
- * @property {string} subscriberDetails.fullName - Subscriber's full name
- * @property {string} subscriberDetails.phoneNumber - Contact number
+ * @typedef {Object} User
+ * @property {string} username - Unique username
+ * @property {string} password - Hashed password
+ * @property {string} role - User role (manager, receptionist, subscriber)
+ * @property {Object} subscriberDetails - Details for subscriber users
+ * @property {string} subscriberDetails.fullName - Full name of subscriber
+ * @property {string} subscriberDetails.phoneNumber - Phone number
  * @property {string} subscriberDetails.referral - Referral information
- * @property {string} subscriberDetails.subscriptionType - Type of subscription plan
- * @property {('Regular Subscriber'|'SRS Worker')} subscriberDetails.subscriberType - Category of subscriber
- * @property {Date} subscriberDetails.dateOfSubscription - Start date of subscription
- * @property {string} subscriberDetails.image - Profile image URL
- * @property {('active'|'expiring'|'expired')} subscriberDetails.status - Current subscription status
+ * @property {string} subscriberDetails.subscriptionType - Type of subscription
+ * @property {string} subscriberDetails.subscriberType - Type of subscriber
+ * @property {Date} subscriberDetails.dateOfSubscription - Date subscription started
+ * @property {Date} subscriberDetails.expiresOn - Automatically calculated expiration date
+ * @property {string} subscriberDetails.image - Path to subscriber image
+ * @property {string} subscriberDetails.status - Subscription status (active, expiring, expired)
+ * @property {Date} createdAt - Date user was created
+ * @property {Date} updatedAt - Date user was last updated
  */
 
 const userSchema = new mongoose.Schema({
   username: {
     type: String,
-    required: true,
-    unique: true
+    required: [true, 'Please provide a username'],
+    unique: true,
+    trim: true
   },
   password: {
     type: String,
-    required: function () {
-      return this.role !== 'subscriber';
-    }
+    select: false
   },
   role: {
     type: String,
     enum: ['manager', 'receptionist', 'subscriber'],
-    required: true
+    default: 'subscriber'
   },
   subscriberDetails: {
     fullName: String,
@@ -53,20 +55,36 @@ const userSchema = new mongoose.Schema({
         'Monthly (day-only)',
         'Monthly (full-access)'
       ],
-      required: true
+      required: function() {
+        return this.role === 'subscriber';
+      }
     },
     subscriberType: {
       type: String,
-      enum: ['Regular Subscriber', 'SRS Worker']
+      enum: ['Regular Subscriber', 'SRS Worker'],
+      required: function() {
+        return this.role === 'subscriber';
+      }
     },
-    dateOfSubscription: Date,
+    dateOfSubscription: {
+      type: Date,
+      required: function() {
+        return this.role === 'subscriber';
+      }
+    },
+    expiresOn: {
+      type: Date
+    },
     image: String,
     status: {
       type: String,
-      enum: ['active', 'expiring', 'expired']
+      enum: ['active', 'expiring', 'expired'],
+      default: 'active'
     }
   }
-}, { timestamps: true });
+}, {
+  timestamps: true
+});
 
 // Password hashing
 userSchema.pre('save', async function (next) {

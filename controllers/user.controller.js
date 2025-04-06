@@ -1,5 +1,6 @@
 const User = require('../models/user.model');
 const asyncHandler = require('../middleware/async.middleware');
+const { updateSubscriberStatus } = require('../utils/subscriber.utils');
 
 exports.createSubscriber = async (req, res) => {
   try {
@@ -13,6 +14,24 @@ exports.createSubscriber = async (req, res) => {
     } = req.body;
 
     const imagePath = req.file ? req.file.path : null;
+    
+    // Calculate expiration date based on subscription type and date
+    const subscriptionDate = new Date(dateOfSubscription);
+    let expiresOn = new Date(subscriptionDate);
+    
+    // Add time based on subscription type
+    if (subscriptionType.includes('Monthly')) {
+      expiresOn.setMonth(expiresOn.getMonth() + 1);
+    } else if (subscriptionType.includes('Bi-weekly')) {
+      expiresOn.setDate(expiresOn.getDate() + 14);
+    } else if (subscriptionType.includes('Weekly')) {
+      expiresOn.setDate(expiresOn.getDate() + 7);
+    } else if (subscriptionType === 'Full day') {
+      expiresOn.setDate(expiresOn.getDate() + 1);
+    } else if (subscriptionType.includes('Half-day')) {
+      // Half day expires same day
+      expiresOn.setHours(23, 59, 59);
+    }
 
     const subscriber = await User.create({
       username: `sub_${Date.now()}`,
@@ -25,11 +44,105 @@ exports.createSubscriber = async (req, res) => {
         dateOfSubscription,
         subscriberType,
         image: imagePath,
-        status: 'active'
+        expiresOn: expiresOn,
+        status: 'active' // Initial status
       }
     });
 
+    // Update status based on expiration date
+    subscriber.subscriberDetails.status = updateSubscriberStatus(subscriber);
+    await subscriber.save();
+
     res.status(201).json({
+      success: true,
+      data: subscriber
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+exports.getSubscribers = async (req, res) => {
+  try {
+    const subscribers = await User.find({ role: 'subscriber' });
+    
+    // Update status for each subscriber
+    for (const subscriber of subscribers) {
+      const newStatus = updateSubscriberStatus(subscriber);
+      if (subscriber.subscriberDetails.status !== newStatus) {
+        subscriber.subscriberDetails.status = newStatus;
+        await subscriber.save();
+      }
+    }
+    
+    res.json(subscribers);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Also update other subscriber-related functions
+exports.updateSubscriber = async (req, res) => {
+  try {
+    const { 
+      fullName, 
+      phoneNumber, 
+      referral, 
+      subscriptionType, 
+      dateOfSubscription, 
+      subscriberType,
+      status 
+    } = req.body;
+
+    const subscriber = await User.findOne({ _id: req.params.id, role: 'subscriber' });
+
+    if (!subscriber) return res.status(404).json({ message: 'Subscriber not found' });
+
+    // Update fields if provided
+    if (fullName) subscriber.subscriberDetails.fullName = fullName;
+    if (phoneNumber) subscriber.subscriberDetails.phoneNumber = phoneNumber;
+    if (referral) subscriber.subscriberDetails.referral = referral;
+    if (status) subscriber.subscriberDetails.status = status;
+    if (subscriberType) subscriber.subscriberDetails.subscriberType = subscriberType;
+    
+    // Recalculate expiration date if subscription type or date changes
+    if (subscriptionType || dateOfSubscription) {
+      const newSubscriptionDate = dateOfSubscription 
+        ? new Date(dateOfSubscription) 
+        : new Date(subscriber.subscriberDetails.dateOfSubscription);
+      
+      const newSubscriptionType = subscriptionType || subscriber.subscriberDetails.subscriptionType;
+      
+      let expiresOn = new Date(newSubscriptionDate);
+      
+      // Add time based on subscription type
+      if (newSubscriptionType.includes('Monthly')) {
+        expiresOn.setMonth(expiresOn.getMonth() + 1);
+      } else if (newSubscriptionType.includes('Bi-weekly')) {
+        expiresOn.setDate(expiresOn.getDate() + 14);
+      } else if (newSubscriptionType.includes('Weekly')) {
+        expiresOn.setDate(expiresOn.getDate() + 7);
+      } else if (newSubscriptionType === 'Full day') {
+        expiresOn.setDate(expiresOn.getDate() + 1);
+      } else if (newSubscriptionType.includes('Half-day')) {
+        // Half day expires same day
+        expiresOn.setHours(23, 59, 59);
+      }
+      
+      if (subscriptionType) subscriber.subscriberDetails.subscriptionType = subscriptionType;
+      if (dateOfSubscription) subscriber.subscriberDetails.dateOfSubscription = dateOfSubscription;
+      subscriber.subscriberDetails.expiresOn = expiresOn;
+    }
+
+    await subscriber.save();
+
+    res.status(200).json({
       success: true,
       data: subscriber
     });
