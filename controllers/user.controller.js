@@ -142,7 +142,8 @@ exports.updateSubscriberImage = async (req, res) => {
 
   if (!subscriber) return res.status(404).json({ message: 'Subscriber not found' });
 
-  const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
+  // When using Cloudinary, req.file.path should already contain the full URL
+  const imagePath = req.file ? req.file.path : null;
 
   if (imagePath) subscriber.subscriberDetails.image = imagePath;
   await subscriber.save();
