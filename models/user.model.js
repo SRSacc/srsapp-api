@@ -5,20 +5,22 @@ const { updateSubscriberStatus } = require('../utils/subscription.util');
 
 /**
  * User Schema
- * @typedef {Object} UserSchema
- * @property {string} username - Unique identifier for the user
- * @property {string} [password] - Required for all roles except subscriber
- * @property {('manager'|'receptionist'|'subscriber')} role - User role in the system
- * @property {Object} subscriberDetails - Details specific to subscriber role
- * @property {string} subscriberDetails.name  - Subscriber's full name
- * @property {string} subscriberDetails.phoneNumber - Contact number
+ * @typedef {Object} User
+ * @property {string} username - Unique username
+ * @property {string} password - Hashed password
+ * @property {string} role - User role (manager, receptionist, subscriber)
+ * @property {Object} subscriberDetails - Details for subscriber users
+ * @property {string} subscriberDetails.name - Full name of subscriber
+ * @property {string} subscriberDetails.phoneNumber - Phone number
  * @property {string} subscriberDetails.referral - Referral information
- * @property {string} subscriberDetails.subscriptionType - Type of subscription plan
- * @property {('Regular Subscriber'|'SRS Worker')} subscriberDetails.subscriberType - Category of subscriber
- * @property {Date} subscriberDetails.dateOfSubscription - Start date of subscription
- * @property {Date} subscriberDetails.expiresOn - End date of subscription
- * @property {string} subscriberDetails.image - Profile image URL
- * @property {('active'|'expiring'|'expired')} subscriberDetails.status - Current subscription status
+ * @property {string} subscriberDetails.subscriptionType - Type of subscription
+ * @property {string} subscriberDetails.subscriberType - Type of subscriber
+ * @property {Date} subscriberDetails.dateOfSubscription - Date subscription started
+ * @property {Date} subscriberDetails.expiresOn - Automatically calculated expiration date
+ * @property {string} subscriberDetails.image - Path to subscriber image
+ * @property {string} subscriberDetails.status - Subscription status (active, expiring, expired)
+ * @property {Date} createdAt - Date user was created
+ * @property {Date} updatedAt - Date user was last updated
  */
 
 const userSchema = new mongoose.Schema({

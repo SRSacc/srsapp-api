@@ -262,11 +262,16 @@ module.exports = router;
  *             dateOfSubscription:
  *               type: string
  *               format: date
+ *             expiresOn:
+ *               type: string
+ *               format: date
+ *               description: Automatically calculated based on subscription type and date
  *             image:
  *               type: string
  *             status:
  *               type: string
  *               enum: ['active', 'expiring', 'expired']
+ *               description: Automatically determined based on expiration date
  *         createdAt:
  *           type: string
  *           format: date-time
