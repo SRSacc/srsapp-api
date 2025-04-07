@@ -1,5 +1,6 @@
 const User = require('../models/user.model');
 const asyncHandler = require('../middleware/async.middleware');
+const { calculateExpiryDate, determineStatus } = require('../utils/subscription.util');
 
 exports.createSubscriber = async (req, res) => {
   try {
@@ -13,6 +14,13 @@ exports.createSubscriber = async (req, res) => {
     } = req.body;
 
     const imagePath = req.file ? req.file.path : null;
+    
+    // Calculate expiration date based on subscription type
+    const subscriptionDate = dateOfSubscription ? new Date(dateOfSubscription) : new Date();
+    const expiresOn = calculateExpiryDate(subscriptionType, subscriptionDate);
+    
+    // Determine initial status based on expiry date
+    const status = determineStatus(expiresOn);
 
     const subscriber = await User.create({
       username: `sub_${Date.now()}`,
@@ -22,10 +30,11 @@ exports.createSubscriber = async (req, res) => {
         phoneNumber,
         referral,
         subscriptionType,
-        dateOfSubscription,
+        dateOfSubscription: subscriptionDate,
         subscriberType,
         image: imagePath,
-        status: 'active'
+        status,
+        expiresOn
       }
     });
 
@@ -82,15 +91,34 @@ exports.getReceptionists = async (req, res) => {
 };
 
 exports.updateSubscriber = async (req, res) => {
-  const { name, status, expiresOn } = req.body;
+  const { fullName, status, subscriptionType, dateOfSubscription } = req.body;
 
   const subscriber = await User.findOne({ _id: req.params.id, role: 'subscriber' });
 
   if (!subscriber) return res.status(404).json({ message: 'Subscriber not found' });
 
-  subscriber.subscriberDetails.name = name || subscriber.subscriberDetails.name;
-  subscriber.subscriberDetails.status = status || subscriber.subscriberDetails.status;
-  subscriber.subscriberDetails.expiresOn = expiresOn || subscriber.subscriberDetails.expiresOn;
+  // Update subscriber details
+  if (fullName) subscriber.subscriberDetails.fullName = fullName;
+  
+  // If subscription type or date changes, recalculate expiry date
+  if (subscriptionType || dateOfSubscription) {
+    const newSubscriptionType = subscriptionType || subscriber.subscriberDetails.subscriptionType;
+    const newSubscriptionDate = dateOfSubscription ? new Date(dateOfSubscription) : 
+                               subscriber.subscriberDetails.dateOfSubscription;
+    
+    subscriber.subscriberDetails.subscriptionType = newSubscriptionType;
+    subscriber.subscriberDetails.dateOfSubscription = newSubscriptionDate;
+    
+    // Calculate new expiry date
+    const newExpiresOn = calculateExpiryDate(newSubscriptionType, newSubscriptionDate);
+    subscriber.subscriberDetails.expiresOn = newExpiresOn;
+    
+    // Determine new status based on new expiry date
+    subscriber.subscriberDetails.status = determineStatus(newExpiresOn);
+  } else if (status) {
+    // Only update status if explicitly provided
+    subscriber.subscriberDetails.status = status;
+  }
 
   await subscriber.save();
 

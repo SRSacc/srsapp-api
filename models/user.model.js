@@ -1,6 +1,7 @@
 // models/user.model.js
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+const { updateSubscriberStatus } = require('../utils/subscription.util');
 
 /**
  * User Schema
@@ -15,6 +16,7 @@ const bcrypt = require('bcryptjs');
  * @property {string} subscriberDetails.subscriptionType - Type of subscription plan
  * @property {('Regular Subscriber'|'SRS Worker')} subscriberDetails.subscriberType - Category of subscriber
  * @property {Date} subscriberDetails.dateOfSubscription - Start date of subscription
+ * @property {Date} subscriberDetails.expiresOn - End date of subscription
  * @property {string} subscriberDetails.image - Profile image URL
  * @property {('active'|'expiring'|'expired')} subscriberDetails.status - Current subscription status
  */
@@ -60,6 +62,7 @@ const userSchema = new mongoose.Schema({
       enum: ['Regular Subscriber', 'SRS Worker']
     },
     dateOfSubscription: Date,
+    expiresOn: Date,  // Added expiresOn field
     image: String,
     status: {
       type: String,
@@ -73,6 +76,14 @@ userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
   if (this.password) {
     this.password = await bcrypt.hash(this.password, 10);
+  }
+  next();
+});
+
+// Update status based on expiry date before saving
+userSchema.pre('save', function(next) {
+  if (this.role === 'subscriber' && this.subscriberDetails && this.subscriberDetails.expiresOn) {
+    updateSubscriberStatus(this);
   }
   next();
 });
