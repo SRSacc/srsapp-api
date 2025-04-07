@@ -10,7 +10,7 @@ const { updateSubscriberStatus } = require('../utils/subscription.util');
  * @property {string} [password] - Required for all roles except subscriber
  * @property {('manager'|'receptionist'|'subscriber')} role - User role in the system
  * @property {Object} subscriberDetails - Details specific to subscriber role
- * @property {string} subscriberDetails.fullName - Subscriber's full name
+ * @property {string} subscriberDetails.name  - Subscriber's full name
  * @property {string} subscriberDetails.phoneNumber - Contact number
  * @property {string} subscriberDetails.referral - Referral information
  * @property {string} subscriberDetails.subscriptionType - Type of subscription plan
@@ -39,7 +39,7 @@ const userSchema = new mongoose.Schema({
     required: true
   },
   subscriberDetails: {
-    fullName: String,
+    name : String,
     phoneNumber: String,
     referral: String,
     subscriptionType: {

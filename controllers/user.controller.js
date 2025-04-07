@@ -5,7 +5,7 @@ const { calculateExpiryDate, determineStatus } = require('../utils/subscription.
 exports.createSubscriber = async (req, res) => {
   try {
     const {
-      fullName,
+      name,
       phoneNumber,
       referral,
       subscriptionType,
@@ -26,7 +26,7 @@ exports.createSubscriber = async (req, res) => {
       username: `sub_${Date.now()}`,
       role: 'subscriber',
       subscriberDetails: {
-        fullName,
+        name,
         phoneNumber,
         referral,
         subscriptionType,
@@ -91,14 +91,14 @@ exports.getReceptionists = async (req, res) => {
 };
 
 exports.updateSubscriber = async (req, res) => {
-  const { fullName, status, subscriptionType, dateOfSubscription } = req.body;
+  const { name, status, subscriptionType, dateOfSubscription } = req.body;
 
   const subscriber = await User.findOne({ _id: req.params.id, role: 'subscriber' });
 
   if (!subscriber) return res.status(404).json({ message: 'Subscriber not found' });
 
   // Update subscriber details
-  if (fullName) subscriber.subscriberDetails.fullName = fullName;
+  if (name) subscriber.subscriberDetails.name = name;
   
   // If subscription type or date changes, recalculate expiry date
   if (subscriptionType || dateOfSubscription) {
