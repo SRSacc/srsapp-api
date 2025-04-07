@@ -100,6 +100,11 @@ exports.updateSubscriber = async (req, res) => {
   // Update subscriber details
   if (name) subscriber.subscriberDetails.name = name;
   
+  // Update image if provided in the request
+  if (req.file) {
+    subscriber.subscriberDetails.image = req.file.path;
+  }
+  
   // If subscription type or date changes, recalculate expiry date
   if (subscriptionType || dateOfSubscription) {
     const newSubscriptionType = subscriptionType || subscriber.subscriberDetails.subscriptionType;
