@@ -61,6 +61,11 @@ const userSchema = new mongoose.Schema({
       type: String,
       enum: ['Regular Subscriber', 'SRS Worker']
     },
+    paymentMode: {
+      type: String,
+      enum: ['Self', 'Company'],
+      default: 'Self'
+    },
     dateOfSubscription: Date,
     expiresOn: Date,  // Added expiresOn field
     image: String,

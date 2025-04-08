@@ -8,6 +8,7 @@ exports.createSubscriber = async (req, res) => {
       name,
       phoneNumber,
       referral,
+      paymentMode,
       subscriptionType,
       dateOfSubscription,
       subscriberType
@@ -32,6 +33,7 @@ exports.createSubscriber = async (req, res) => {
         subscriptionType,
         dateOfSubscription: subscriptionDate,
         subscriberType,
+        paymentMode,
         image: imagePath,
         status,
         expiresOn
