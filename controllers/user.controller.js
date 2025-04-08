@@ -53,8 +53,34 @@ exports.createSubscriber = async (req, res) => {
 };
 
 exports.getSubscribers = async (req, res) => {
-  const subscribers = await User.find({ role: 'subscriber' });
-  res.json(subscribers);
+  try {
+    // Get pagination parameters from query string
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    
+    // Get total count for pagination metadata
+    const total = await User.countDocuments({ role: 'subscriber' });
+    
+    // Get paginated subscribers
+    const subscribers = await User.find({ role: 'subscriber' })
+      .skip(skip)
+      .limit(limit)
+      .sort({ 'subscriberDetails.name': 1 });
+    
+    // Return paginated response
+    res.json({
+      subscribers,
+      pagination: {
+        total,
+        page,
+        limit,
+        pages: Math.ceil(total / limit)
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching subscribers', error: error.message });
+  }
 };
 
 exports.createReceptionist = async (req, res) => {

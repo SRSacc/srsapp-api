@@ -148,13 +148,46 @@ module.exports = router;
  * @swagger
  * /users/subscribers:
  *   get:
- *     summary: Get all subscribers
+ *     summary: Get all subscribers with pagination
  *     tags: [Subscribers]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Number of items per page
  *     responses:
  *       200:
- *         description: List of subscribers
+ *         description: List of subscribers with pagination metadata
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 subscribers:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Subscriber'
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     total:
+ *                       type: integer
+ *                     page:
+ *                       type: integer
+ *                     limit:
+ *                       type: integer
+ *                     pages:
+ *                       type: integer
  *       401:
  *         description: Unauthorized
  */
