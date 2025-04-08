@@ -63,8 +63,8 @@ const userSchema = new mongoose.Schema({
     },
     paymentMode: {
       type: String,
-      enum: ['Self', 'Company'],
-      default: 'Self'
+      enum: ['self', 'company'],
+      default: 'self'
     },
     dateOfSubscription: Date,
     expiresOn: Date,  // Added expiresOn field
