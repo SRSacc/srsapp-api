@@ -16,9 +16,11 @@ const { updateSubscriberStatus } = require('../utils/subscription.util');
  * @property {string} subscriberDetails.subscriptionType - Type of subscription plan
  * @property {('Regular Subscriber'|'SRS Worker')} subscriberDetails.subscriberType - Category of subscriber
  * @property {Date} subscriberDetails.dateOfSubscription - Start date of subscription
- * @property {Date} subscriberDetails.expiresOn - End date of subscription
+ * @property {Date} subscriberDetails.startDateTime - Start date and time of subscription
+ * @property {Date} subscriberDetails.endDateTime - Daily access end time
+ * @property {Date} subscriberDetails.expirationDate - Subscription expiry date
  * @property {string} subscriberDetails.image - Profile image URL
- * @property {('active'|'expiring'|'expired')} subscriberDetails.status - Current subscription status
+ * @property {('active'|'expiring'|'expired'|'pending')} subscriberDetails.status - Current subscription status
  */
 
 const userSchema = new mongoose.Schema({
@@ -39,7 +41,7 @@ const userSchema = new mongoose.Schema({
     required: true
   },
   subscriberDetails: {
-    name : String,
+    name: String,
     phoneNumber: String,
     referral: String,
     subscriptionType: {
@@ -67,11 +69,14 @@ const userSchema = new mongoose.Schema({
       default: 'Self'
     },
     dateOfSubscription: Date,
-    expiresOn: Date,  // Added expiresOn field
+    startDateTime: Date,
+    endDateTime: Date,
+    expirationDate: Date,
     image: String,
     status: {
       type: String,
-      enum: ['active', 'expiring', 'expired']
+      enum: ['active', 'expiring', 'expired', 'pending'],
+      default: 'active'
     }
   }
 }, { timestamps: true });
@@ -87,7 +92,7 @@ userSchema.pre('save', async function (next) {
 
 // Update status based on expiry date before saving
 userSchema.pre('save', function(next) {
-  if (this.role === 'subscriber' && this.subscriberDetails && this.subscriberDetails.expiresOn) {
+  if (this.role === 'subscriber' && this.subscriberDetails && this.subscriberDetails.expirationDate) {
     updateSubscriberStatus(this);
   }
   next();

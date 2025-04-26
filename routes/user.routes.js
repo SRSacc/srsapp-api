@@ -6,6 +6,7 @@ const {
   getSubscribers,
   updateSubscriber,
   deleteSubscriber,
+  getSubscriberStatus,
   updateSubscriberImage,
   createReceptionist,
   getReceptionists,
@@ -17,24 +18,6 @@ const { protect } = require('../middleware/auth.middleware');
 const { authorizeRoles } = require('../middleware/authorize.middleware');
 const upload = require('../middleware/upload.middleware');
 
-// Subscribers
-router.post('/subscribers', protect, authorizeRoles('receptionist', 'manager'), upload.single('image'), createSubscriber);
-router.get('/subscribers', protect, authorizeRoles('receptionist', 'manager'), getSubscribers);
-router.put('/subscribers/:id', protect, authorizeRoles('receptionist', 'manager'), updateSubscriber);
-router.delete('/subscribers/:id', protect, authorizeRoles('receptionist', 'manager'), deleteSubscriber);
-router.put('/subscribers/:id/image', protect, authorizeRoles('receptionist', 'manager'), upload.single('image'), updateSubscriberImage);
-
-// Receptionists (Manager-only)
-router.post('/receptionists', protect, authorizeRoles('manager'), createReceptionist);
-router.get('/receptionists', protect, authorizeRoles('manager'), getReceptionists);
-
-// Password Change
-router.post('/change-password', protect, changePassword);
-
-// User Details
-router.get('/me', protect, getUserDetails);
-
-module.exports = router;
 /**
  * @swagger
  * tags:
@@ -46,35 +29,7 @@ module.exports = router;
  *     description: Receptionist Management
  */
 
-/**
- * @swagger
- * /auth/login:
- *   post:
- *     summary: Login as any user (manager, receptionist, subscriber)
- *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - username
- *               - password
- *             properties:
- *               username:
- *                 type: string
- *                 example: manager1
- *               password:
- *                 type: string
- *                 example: superSecure123
- *     responses:
- *       200:
- *         description: Successfully logged in
- *       401:
- *         description: Invalid credentials
- */
-
+// Subscribers
 /**
  * @swagger
  * /users/subscribers:
@@ -143,6 +98,7 @@ module.exports = router;
  *       401:
  *         description: Unauthorized
  */
+router.post('/subscribers', protect, authorizeRoles('receptionist', 'manager'), upload.single('image'), createSubscriber);
 
 /**
  * @swagger
@@ -191,6 +147,7 @@ module.exports = router;
  *       401:
  *         description: Unauthorized
  */
+router.get('/subscribers', protect, authorizeRoles('receptionist', 'manager'), getSubscribers);
 
 /**
  * @swagger
@@ -252,6 +209,209 @@ module.exports = router;
  *                 data:
  *                   $ref: '#/components/schemas/Subscriber'
  */
+router.put('/subscribers/:id', protect, authorizeRoles('receptionist', 'manager'), updateSubscriber);
+
+/**
+ * @swagger
+ * /users/subscribers/{id}:
+ *   delete:
+ *     summary: Delete a subscriber
+ *     tags: [Subscribers]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Subscriber ID
+ *     responses:
+ *       200:
+ *         description: Subscriber deleted
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Subscriber not found
+ */
+router.delete('/subscribers/:id', protect, authorizeRoles('receptionist', 'manager'), deleteSubscriber);
+
+/**
+ * @swagger
+ * /users/subscribers/{id}/image:
+ *   put:
+ *     summary: Update subscriber image
+ *     tags: [Subscribers]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Subscriber ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Image updated
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Subscriber not found
+ */
+router.put('/subscribers/:id/image', protect, authorizeRoles('receptionist', 'manager'), upload.single('image'), updateSubscriberImage);
+
+/**
+ * @swagger
+ * /users/subscribers/{id}/status:
+ *   get:
+ *     summary: Get subscriber status
+ *     tags: [Subscribers]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Subscriber status information
+ *       404:
+ *         description: Subscriber not found
+ */
+router.get('/subscribers/:id/status', protect, getSubscriberStatus);
+
+// Receptionists (Manager-only)
+/**
+ * @swagger
+ * /users/receptionists:
+ *   post:
+ *     summary: Create a new receptionist (Manager only)
+ *     tags: [Receptionists]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - username
+ *               - password
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Receptionist created
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ */
+router.post('/receptionists', protect, authorizeRoles('manager'), createReceptionist);
+
+/**
+ * @swagger
+ * /users/receptionists:
+ *   get:
+ *     summary: Get all receptionists (Manager only)
+ *     tags: [Receptionists]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of receptionists
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ */
+router.get('/receptionists', protect, authorizeRoles('manager'), getReceptionists);
+
+// Password Change
+/**
+ * @swagger
+ * /users/change-password:
+ *   post:
+ *     summary: Change password (Authenticated users only)
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - currentPassword
+ *               - newPassword
+ *             properties:
+ *               currentPassword:
+ *                 type: string
+ *               newPassword:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Password changed successfully
+ *       400:
+ *         description: Invalid current password
+ *       401:
+ *         description: Unauthorized
+ */
+router.post('/change-password', protect, changePassword);
+
+// User Details
+/**
+ * @swagger
+ * /users/me:
+ *   get:
+ *     summary: Get authenticated user details
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User details retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     _id:
+ *                       type: string
+ *                     username:
+ *                       type: string
+ *                     role:
+ *                       type: string
+ *                       enum: ['manager', 'receptionist', 'subscriber']
+ *                     subscriberDetails:
+ *                       $ref: '#/components/schemas/Subscriber'
+ *       401:
+ *         description: Not authorized
+ */
+router.get('/me', protect, getUserDetails);
 
 /**
  * @swagger
@@ -306,183 +466,6 @@ module.exports = router;
  *         updatedAt:
  *           type: string
  *           format: date-time
- *
- *     responses:
- *       200:
- *         description: Subscriber updated
- *       401:
- *         description: Unauthorized
- *       404:
- *         description: Subscriber not found
  */
 
-/**
- * @swagger
- * /users/subscribers/{id}/image:
- *   put:
- *     summary: Update subscriber image
- *     tags: [Subscribers]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: Subscriber ID
- *     requestBody:
- *       required: true
- *       content:
- *         multipart/form-data:
- *           schema:
- *             type: object
- *             properties:
- *               image:
- *                 type: string
- *                 format: binary
- *     responses:
- *       200:
- *         description: Image updated
- *       401:
- *         description: Unauthorized
- *       404:
- *         description: Subscriber not found
- */
-
-/**
- * @swagger
- * /users/subscribers/{id}:
- *   delete:
- *     summary: Delete a subscriber
- *     tags: [Subscribers]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: Subscriber ID
- *     responses:
- *       200:
- *         description: Subscriber deleted
- *       401:
- *         description: Unauthorized
- *       404:
- *         description: Subscriber not found
- */
-
-/**
- * @swagger
- * /users/receptionists:
- *   post:
- *     summary: Create a new receptionist (Manager only)
- *     tags: [Receptionists]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - username
- *               - password
- *             properties:
- *               username:
- *                 type: string
- *               password:
- *                 type: string
- *     responses:
- *       201:
- *         description: Receptionist created
- *       401:
- *         description: Unauthorized
- *       403:
- *         description: Forbidden
- */
-
-/**
- * @swagger
- * /users/receptionists:
- *   get:
- *     summary: Get all receptionists (Manager only)
- *     tags: [Receptionists]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: List of receptionists
- *       401:
- *         description: Unauthorized
- *       403:
- *         description: Forbidden
- */
-
-/**
- * @swagger
- * /users/change-password:
- *   post:
- *     summary: Change password (Authenticated users only)
- *     tags: [Auth]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - currentPassword
- *               - newPassword
- *             properties:
- *               currentPassword:
- *                 type: string
- *               newPassword:
- *                 type: string
- *     responses:
- *       200:
- *         description: Password changed successfully
- *       400:
- *         description: Invalid current password
- *       401:
- *         description: Unauthorized
- */
-
-/**
- * @swagger
- * /users/me:
- *   get:
- *     summary: Get authenticated user details
- *     tags: [Auth]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: User details retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 data:
- *                   type: object
- *                   properties:
- *                     _id:
- *                       type: string
- *                     username:
- *                       type: string
- *                     role:
- *                       type: string
- *                       enum: ['manager', 'receptionist', 'subscriber']
- *                     subscriberDetails:
- *                       $ref: '#/components/schemas/Subscriber'
- *       401:
- *         description: Not authorized
- */
+module.exports = router;
