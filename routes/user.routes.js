@@ -291,7 +291,7 @@ router.put('/subscribers/:id/image', protect, authorizeRoles('receptionist', 'ma
  *       404:
  *         description: Subscriber not found
  */
-router.get('/subscribers/:id/status', protect, getSubscriberStatus);
+router.get('/subscribers/:id/status', protect, authorizeRoles('receptionist', 'manager'), getSubscriberStatus);
 
 // Receptionists (Manager-only)
 /**

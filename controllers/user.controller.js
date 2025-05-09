@@ -204,3 +204,32 @@ exports.getUserDetails = asyncHandler(async (req, res) => {
     data: user
   });
 });
+
+exports.getSubscriberStatus = async (req, res) => {
+  try {
+    const subscriber = await User.findOne({ _id: req.params.id, role: 'subscriber' });
+    
+    if (!subscriber) {
+      return res.status(404).json({ message: 'Subscriber not found' });
+    }
+
+    // Get current status and expiry date
+    const status = subscriber.subscriberDetails.status;
+    const expiresOn = subscriber.subscriberDetails.expiresOn;
+
+    res.json({
+      success: true,
+      data: {
+        status,
+        expiresOn,
+        name: subscriber.subscriberDetails.name,
+        subscriptionType: subscriber.subscriberDetails.subscriptionType
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
