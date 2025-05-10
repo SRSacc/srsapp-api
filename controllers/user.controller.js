@@ -1,6 +1,6 @@
 const User = require('../models/user.model');
 const asyncHandler = require('../middleware/async.middleware');
-const { calculateExpiryDate, determineStatus } = require('../utils/subscription.util');
+const { calculateExpirationDate, determineStatus } = require('../utils/subscription.util');
 const moment = require('moment');
 
 exports.createSubscriber = async (req, res) => {
@@ -19,10 +19,10 @@ exports.createSubscriber = async (req, res) => {
     
     // Calculate expiration date based on subscription type
     const subscriptionDate = dateOfSubscription ? new Date(dateOfSubscription) : new Date();
-    const expiresOn = calculateExpiryDate(subscriptionType, subscriptionDate);
+    const expiresOn = calculateExpirationDate(subscriptionDate, subscriptionType);
     
     // Determine initial status based on expiry date
-    const status = determineStatus(expiresOn);
+    const status = determineStatus(subscriptionDate, expiresOn);
 
     const subscriber = await User.create({
       username: `sub_${Date.now()}`,
