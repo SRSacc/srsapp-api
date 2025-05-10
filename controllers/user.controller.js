@@ -22,7 +22,8 @@ exports.createSubscriber = async (req, res) => {
     const expiresOn = calculateExpirationDate(subscriptionDate, subscriptionType);
     
     // Determine initial status based on expiry date
-    const status = determineStatus(subscriptionDate, expiresOn);
+    const statusObj = determineStatus(subscriptionDate, expiresOn);
+    const status = statusObj.status;
 
     const subscriber = await User.create({
       username: `sub_${Date.now()}`,
