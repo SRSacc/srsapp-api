@@ -12,14 +12,14 @@ exports.createSubscriber = async (req, res) => {
       paymentMode,
       subscriptionType,
       dateOfSubscription,
-      subscriberType
+      subscriberType,
+      expirationDate
     } = req.body;
 
     const imagePath = req.file ? req.file.path : null;
     
     // Calculate expiration date based on subscription type
     const subscriptionDate = dateOfSubscription ? new Date(dateOfSubscription) : new Date();
-    const expiresOn = calculateExpirationDate(subscriptionDate, subscriptionType);
     
     // Determine initial status based on expiry date
     const statusObj = determineStatus(subscriptionDate, expiresOn);
@@ -39,6 +39,7 @@ exports.createSubscriber = async (req, res) => {
         subscriptionType,
         dateOfSubscription: subscriptionDate,
         startDateTime,
+        expirationDate,
         endDateTime,
         subscriberType,
         paymentMode,
