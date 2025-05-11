@@ -25,6 +25,10 @@ exports.createSubscriber = async (req, res) => {
     const statusObj = determineStatus(subscriptionDate, expiresOn);
     const status = statusObj.status;
 
+    // Add startDateTime and endDateTime
+    const startDateTime = subscriptionDate;
+    const endDateTime = moment(subscriptionDate).endOf('day').toDate();
+
     const subscriber = await User.create({
       username: `sub_${Date.now()}`,
       role: 'subscriber',
@@ -34,6 +38,8 @@ exports.createSubscriber = async (req, res) => {
         referral,
         subscriptionType,
         dateOfSubscription: subscriptionDate,
+        startDateTime,
+        endDateTime,
         subscriberType,
         paymentMode,
         image: imagePath,
