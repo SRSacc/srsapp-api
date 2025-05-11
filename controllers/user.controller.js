@@ -20,6 +20,7 @@ exports.createSubscriber = async (req, res) => {
     
     // Calculate expiration date based on subscription type
     const subscriptionDate = dateOfSubscription ? new Date(dateOfSubscription) : new Date();
+    const expiresOn = calculateExpirationDate(subscriptionDate, subscriptionType);
     
     // Determine initial status based on expiry date
     const statusObj = determineStatus(subscriptionDate, expiresOn);
