@@ -566,6 +566,6 @@ router.get('/me', protect, getUserDetails);
  *       500:
  *         description: Server error
  */
-router.post('/subscribers/:id/resubscribe', authorize(['manager', 'receptionist']), resubscribe);
+router.post('/subscribers/:id/resubscribe', protect, authorizeRoles('receptionist', 'manager'), resubscribe);
 
 module.exports = router;
