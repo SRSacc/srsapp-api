@@ -153,7 +153,7 @@ exports.updateSubscriber = async (req, res) => {
     subscriber.subscriberDetails.dateOfSubscription = newSubscriptionDate;
     
     // Calculate new expiry date
-    const newExpiresOn = calculateExpiryDate(newSubscriptionType, newSubscriptionDate);
+    const newExpiresOn = calculateExpirationDate(newSubscriptionType, newSubscriptionDate);
     subscriber.subscriberDetails.expiresOn = newExpiresOn;
     
     // Determine new status based on new expiry date
