@@ -11,7 +11,8 @@ const {
   createReceptionist,
   getReceptionists,
   changePassword,
-  getUserDetails
+  getUserDetails,
+  resubscribe
 } = require('../controllers/user.controller');
 
 const { protect } = require('../middleware/auth.middleware');
