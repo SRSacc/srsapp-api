@@ -145,19 +145,20 @@ exports.updateSubscriber = async (req, res) => {
   
   // If subscription type or date changes, recalculate expiry date
   if (subscriptionType || dateOfSubscription) {
-    const newSubscriptionType = subscriptionType || subscriber.subscriberDetails.subscriptionType;
-    const newSubscriptionDate = dateOfSubscription ? new Date(dateOfSubscription) : 
-                               subscriber.subscriberDetails.dateOfSubscription;
-    
-    subscriber.subscriberDetails.subscriptionType = newSubscriptionType;
-    subscriber.subscriberDetails.dateOfSubscription = newSubscriptionDate;
-    
-    // Calculate new expiry date
-    const newExpiresOn = calculateExpirationDate(newSubscriptionType, newSubscriptionDate);
-    subscriber.subscriberDetails.expiresOn = newExpiresOn;
-    
-    // Determine new status based on new expiry date
-    subscriber.subscriberDetails.status = determineStatus(newExpiresOn);
+      const newSubscriptionType = subscriptionType || subscriber.subscriberDetails.subscriptionType;
+      const newSubscriptionDate = dateOfSubscription ? new Date(dateOfSubscription) : 
+                                 subscriber.subscriberDetails.dateOfSubscription;
+      
+      subscriber.subscriberDetails.subscriptionType = newSubscriptionType;
+      subscriber.subscriberDetails.dateOfSubscription = newSubscriptionDate;
+      
+      // Calculate new expiry date
+      const newExpiresOn = calculateExpirationDate(newSubscriptionDate, newSubscriptionType);
+      subscriber.subscriberDetails.expiresOn = newExpiresOn;
+      
+      // Determine new status based on new expiry date
+      const statusObj = determineStatus(newSubscriptionDate, newExpiresOn);
+      subscriber.subscriberDetails.status = statusObj.status; // Only assign the status string
   } else if (status) {
     // Only update status if explicitly provided
     subscriber.subscriberDetails.status = status;
