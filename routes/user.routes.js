@@ -468,4 +468,104 @@ router.get('/me', protect, getUserDetails);
  *           format: date-time
  */
 
+/**
+ * @swagger
+ * /api/subscribers/{id}/resubscribe:
+ *   post:
+ *     summary: Resubscribe an expired user
+ *     description: Archives the current subscription to history and creates a new subscription
+ *     tags: [Subscribers]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - subscriptionType
+ *             properties:
+ *               subscriptionType:
+ *                 type: string
+ *                 enum:
+ *                   - Half-day (morning)
+ *                   - Half-day (night)
+ *                   - Full day
+ *                   - Weekly (day-only)
+ *                   - Weekly (full-access)
+ *                   - Bi-weekly (day-only)
+ *                   - Bi-weekly (full-access)
+ *                   - Monthly (day-only)
+ *                   - Monthly (full-access)
+ *               dateOfSubscription:
+ *                 type: string
+ *                 format: date
+ *                 description: Start date of new subscription (defaults to current date)
+ *     responses:
+ *       200:
+ *         description: Subscription updated successfully
+ *       400:
+ *         description: Invalid request parameters
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Server error
+ */
+/**
+ * @swagger
+ * /api/subscribers/{id}/resubscribe:
+ *   post:
+ *     summary: Resubscribe an expired user
+ *     description: Archives the current subscription to history and creates a new subscription
+ *     tags: [Subscribers]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - subscriptionType
+ *             properties:
+ *               subscriptionType:
+ *                 type: string
+ *                 enum:
+ *                   - Half-day (morning)
+ *                   - Half-day (night)
+ *                   - Full day
+ *                   - Weekly (day-only)
+ *                   - Weekly (full-access)
+ *                   - Bi-weekly (day-only)
+ *                   - Bi-weekly (full-access)
+ *                   - Monthly (day-only)
+ *                   - Monthly (full-access)
+ *               dateOfSubscription:
+ *                 type: string
+ *                 format: date
+ *                 description: Start date of new subscription (defaults to current date)
+ *     responses:
+ *       200:
+ *         description: Subscription updated successfully
+ *       400:
+ *         description: Invalid request parameters
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Server error
+ */
+router.post('/subscribers/:id/resubscribe', authorize(['manager', 'receptionist']), resubscribe);
+
 module.exports = router;

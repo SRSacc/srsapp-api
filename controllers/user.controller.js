@@ -2,6 +2,7 @@ const User = require('../models/user.model');
 const asyncHandler = require('../middleware/async.middleware');
 const { calculateExpirationDate, determineStatus } = require('../utils/subscription.util');
 const moment = require('moment');
+const SubscriptionHistory = require('../models/subscription-history.model');
 
 exports.createSubscriber = async (req, res) => {
   try {
@@ -240,6 +241,88 @@ exports.getSubscriberStatus = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+
+/**
+ * @desc    Resubscribe an expired user
+ * @route   POST /api/subscribers/:id/resubscribe
+ * @access  Private (Manager, Receptionist)
+ * @param   {string} req.params.id - User ID
+ * @param   {Object} req.body
+ * @param   {string} req.body.subscriptionType - New subscription type
+ * @param   {Date} [req.body.dateOfSubscription] - Start date of new subscription (defaults to current date)
+ * @returns {Object} Updated user object
+ * 
+ * @example
+ * // Request body
+ * {
+ *   "subscriptionType": "Monthly (full-access)",
+ *   "dateOfSubscription": "2024-03-20" // optional
+ * }
+ * 
+ * // Response
+ * {
+ *   "success": true,
+ *   "data": {
+ *     // Updated user object
+ *   }
+ * }
+ */
+exports.resubscribe = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { subscriptionType, dateOfSubscription } = req.body;
+
+    // Find the user
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Save current subscription to history
+    await SubscriptionHistory.create({
+      userId: user._id,
+      subscriptionType: user.subscriberDetails.subscriptionType,
+      subscriberType: user.subscriberDetails.subscriberType,
+      paymentMode: user.subscriberDetails.paymentMode,
+      dateOfSubscription: user.subscriberDetails.dateOfSubscription,
+      startDateTime: user.subscriberDetails.startDateTime,
+      endDateTime: user.subscriberDetails.endDateTime,
+      expirationDate: user.subscriberDetails.expirationDate,
+      status: user.subscriberDetails.status
+    });
+
+    // Calculate new subscription dates
+    const subscriptionDate = dateOfSubscription ? new Date(dateOfSubscription) : new Date();
+    const expiresOn = calculateExpirationDate(subscriptionDate, subscriptionType);
+    const statusObj = determineStatus(subscriptionDate, expiresOn);
+    const startDateTime = subscriptionDate;
+    const endDateTime = moment(subscriptionDate).endOf('day').toDate();
+
+    // Update user's subscription details
+    user.subscriberDetails.subscriptionType = subscriptionType;
+    user.subscriberDetails.dateOfSubscription = subscriptionDate;
+    user.subscriberDetails.startDateTime = startDateTime;
+    user.subscriberDetails.endDateTime = endDateTime;
+    user.subscriberDetails.expirationDate = expiresOn;
+    user.subscriberDetails.status = statusObj.status;
+
+    await user.save();
+
+    res.json({
+      success: true,
+      data: user
+    });
+  } catch (error) {
+    res.status(400).json({
       success: false,
       message: error.message
     });
