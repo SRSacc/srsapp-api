@@ -151,14 +151,16 @@ exports.updateSubscriber = async (req, res) => {
       
       subscriber.subscriberDetails.subscriptionType = newSubscriptionType;
       subscriber.subscriberDetails.dateOfSubscription = newSubscriptionDate;
+      subscriber.subscriberDetails.startDateTime = newSubscriptionDate; // Add this line
       
       // Calculate new expiry date
       const newExpiresOn = calculateExpirationDate(newSubscriptionDate, newSubscriptionType);
       subscriber.subscriberDetails.expiresOn = newExpiresOn;
+      subscriber.subscriberDetails.expirationDate = newExpiresOn; // Add this line
       
-      // Determine new status based on new expiry date
+      // Determine new status based on new dates
       const statusObj = determineStatus(newSubscriptionDate, newExpiresOn);
-      subscriber.subscriberDetails.status = statusObj.status; // Only assign the status string
+      subscriber.subscriberDetails.status = statusObj.status;
   } else if (status) {
     // Only update status if explicitly provided
     subscriber.subscriberDetails.status = status;
